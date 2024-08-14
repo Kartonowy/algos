@@ -4,10 +4,13 @@ use std::{
 };
 
 mod metadata;
-use metadata::padding::resolve_padding;
 use metadata::seektable::resolve_seektable;
 use metadata::streaminfo::resolve_streaminfo;
 use metadata::vorbis_comment::resolve_vorbis_comment;
+use metadata::Blocktype::*;
+use metadata::{padding::resolve_padding, Block};
+
+mod frame;
 
 fn main() {
     let nokotan = File::open("shojo.flac").unwrap();
@@ -28,6 +31,9 @@ fn main() {
     let mut is_last = false;
     let mut n_metablock = 0;
 
+    //superimportanto
+    let mut METADATA: Vec<Block> = vec![];
+
     while !is_last {
         is_last = buf[cursor] & 128 != 0;
         let block_type = buf[cursor] & 127;
@@ -44,23 +50,24 @@ fn main() {
         n_metablock += 1;
 
         print!("  type {block_type}: ");
+        let mut current_block = Block::new(is_last, meta_len);
         match block_type {
             0 => {
                 println!("STREAMINFO");
-                resolve_streaminfo(&buf[cursor..cursor + meta_len]);
+                current_block.set_type(resolve_streaminfo(&buf[cursor..cursor + meta_len]))
             }
             1 => {
                 println!("PADDING");
-                resolve_padding(&buf[cursor..cursor + meta_len]);
+                current_block.set_type(resolve_padding(&buf[cursor..cursor + meta_len]))
             }
             2 => println!("APPLICATION"),
             3 => {
                 println!("SEEKTABLE");
-                resolve_seektable(&buf[cursor..cursor + meta_len], meta_len);
+                current_block.set_type(resolve_seektable(&buf[cursor..cursor + meta_len], meta_len))
             }
             4 => {
                 println!("VORBIS_COMMENT");
-                resolve_vorbis_comment(&buf[cursor..cursor + meta_len]);
+                current_block.set_type(resolve_vorbis_comment(&buf[cursor..cursor + meta_len]))
             }
             5 => println!("CUESHEET"),
             6 => println!("PICTURE"),
@@ -68,6 +75,8 @@ fn main() {
             127 => unreachable!(),
             _ => {}
         }
+        METADATA.push(current_block);
         cursor += meta_len as usize;
     }
+    println!("{:#?}", METADATA)
 }

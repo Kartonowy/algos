@@ -1,7 +1,18 @@
-pub fn resolve_seektable(buf: &[u8], length: usize) {
+use super::Blocktype;
+
+#[derive(Debug)]
+pub struct SEEKPOINT {
+    sample_number: u64,
+    offset: u64,
+    frame_samples: u16,
+}
+
+// TODO: Placeholder points
+pub fn resolve_seektable(buf: &[u8], length: usize) -> Blocktype {
     let seek_points = length / 18;
     println!("seek points: {}", seek_points);
     let mut cursor = 0;
+    let mut table: Vec<SEEKPOINT> = vec![];
     for i in 0..seek_points {
         print!("point {i}: ");
         let sample_number = u64::from(buf[cursor]) << 56
@@ -26,8 +37,14 @@ pub fn resolve_seektable(buf: &[u8], length: usize) {
         cursor += 8;
         print!("offset: {offset},");
 
-        let n_samples_in_frame: u16 = u16::from(buf[cursor]) << 8 | u16::from(buf[cursor + 1]);
-        print!("frame_samples: {}\n", n_samples_in_frame);
+        let frame_samples: u16 = u16::from(buf[cursor]) << 8 | u16::from(buf[cursor + 1]);
+        print!("frame_samples: {}\n", frame_samples);
         cursor += 2;
+        table.push(SEEKPOINT {
+            sample_number,
+            offset,
+            frame_samples,
+        })
     }
+    Blocktype::SEEKTABLE { seekpoints: table }
 }
