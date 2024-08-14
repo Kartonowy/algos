@@ -3,22 +3,11 @@ use std::{
     io::{BufReader, Read},
 };
 
-use streaminfo::streaminfo::{
-    resolve_padding, resolve_seektable, resolve_streaminfo, resolve_vorbis_comment,
-};
-
-mod streaminfo;
-mod utils;
-// enum Block {
-//     StreamingInfo,
-//     Padding,
-//     Applcation,
-//     Seektable,
-//     VorbisComment,
-//     Cuesheet,
-//     Picture,
-//     Else,
-// }
+mod metadata;
+use metadata::padding::resolve_padding;
+use metadata::seektable::resolve_seektable;
+use metadata::streaminfo::resolve_streaminfo;
+use metadata::vorbis_comment::resolve_vorbis_comment;
 
 fn main() {
     let nokotan = File::open("shojo.flac").unwrap();
