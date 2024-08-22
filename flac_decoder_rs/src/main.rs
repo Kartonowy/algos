@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+#![allow(non_camel_case_types)]
 use std::{
     fs::{read, File},
     io::{BufReader, Error, ErrorKind, Read},
@@ -24,7 +26,10 @@ fn main() -> std::io::Result<()> {
     let mut buf = [0; 2];
     let _ = reader.read(&mut buf)?;
 
-    let num = u16::from(buf[0]) << 6 | (u16::from(buf[1]) >> 2);
-    print!("{:b}", num);
+    let sync_code = u16::from(buf[0]) << 6 | (u16::from(buf[1]) >> 2);
+    print!("Sync code: {:b}", sync_code);
+    assert_eq!(sync_code, 0b11111111111110);
+
+    let reserved = bool::from(buf[1] << 6 >> 1);
     Ok(())
 }
