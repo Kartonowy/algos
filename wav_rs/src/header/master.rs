@@ -10,20 +10,12 @@ pub struct Master {
     file_format_id: [u8; 4],
 }
 impl Master {
-    pub fn from_bufreader(
-        mut reader: BufReader<File>,
-    ) -> std::io::Result<(Master, BufReader<File>)> {
-        let mut buf2 = [0; 4];
+    pub fn from_slice(buf: &[u8; 12]) -> std::io::Result<Master> {
         let mut master = Master {
-            file_format_id: [0; 4],
-            file_size: 0,
-            file_type_bloc_id: [0; 4],
+            file_type_bloc_id: buf[0..4].try_into().unwrap(),
+            file_size: u32::from_le_bytes(buf[4..8].try_into().unwrap()),
+            file_format_id: buf[8..12].try_into().unwrap(),
         };
-        reader.read_exact(&mut master.file_type_bloc_id)?;
-        reader.read_exact(&mut buf2)?;
-        reader.read_exact(&mut master.file_format_id)?;
-        master.file_size = u32::from_le_bytes(buf2) - 8;
-
         assert_eq!(
             master.file_type_bloc_id,
             [0x52, 0x49, 0x46, 0x46] as [u8; 4],
@@ -37,6 +29,6 @@ impl Master {
             "File format id should be 'WAVE', is {:?}",
             master.file_format_id
         );
-        Ok((master, reader))
+        Ok(master)
     }
 }
