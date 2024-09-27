@@ -15,14 +15,14 @@ impl Node  {
     fn left(&mut self) -> &mut Node {
         match self.left.as_mut() {
             Some(e) => e.as_mut(),
-            None => panic!("Couldnt find left element")
+            None => panic!("Couldnt find left element!")
         }
     }
 
     fn right(&mut self) -> &mut Node {
         match self.right.as_mut() {
             Some(e) => e.as_mut(),
-            None => panic!("Couldnt find right element")
+            None => panic!("Couldnt find right element!")
         }
     }
 
